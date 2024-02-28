@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+/*
 const tempMovieData = [
   {
     imdbID: "tt1375666",
@@ -46,6 +46,7 @@ const tempWatchedData = [
     userRating: 9,
   },
 ];
+*/
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -53,13 +54,14 @@ const average = (arr) =>
 const KEY = '92d76f2e';
 
 export default function App() {
+
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
 
-  const tempquery = "top+gun+Maverick";
 
   /* The following shows how useEffect works and when its executed
 
@@ -76,6 +78,18 @@ export default function App() {
     }, [query]); // array with a value means it runs after every render if the value has changed
 
   */
+  function handleSelectMovie(id) {
+    // Update the selectedId state
+    // If the current id is the same as the selectedId, set selectedId to null (deselect it)
+    // If the current id is not the same as the selectedId, set selectedId to the current id (select it)
+    setSelectedId((selectedId) => (id === selectedId ? null : id));
+  }
+
+  // This function is used to handle the closing of a movie.
+  // It sets the selectedId state to null, indicating that no movie is currently selected.
+  function handleCloseMovie() {
+    setSelectedId(null);
+  }
 
   /* 
   This is a React component that fetches movie data from the OMDB API when it mounts.
@@ -109,6 +123,7 @@ export default function App() {
         if (data.Response === 'False') throw new Error(data.Error);
         // Update the movies state with the Search results from the API response
         setMovies(data.Search);
+        // console.log(data.Search);
       }
       catch (error) {
         // Log the error to the console
@@ -120,7 +135,7 @@ export default function App() {
       }
       // console.log(data.Search);
     }
-    
+
     if (!query.length) {
       setMovies([])
       setError('')
@@ -142,14 +157,25 @@ export default function App() {
           {/* If isLoading is true, render the Loader component */}
           {isLoading && <Loader />}
           {/* If isLoading is false and error is false, render the MovieList component */}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && <MovieList movies={movies} onSelectMovie={handleSelectMovie} />}
           {/* If error is true, render the ErrorMessage component */}
           {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMoviesList watched={watched} />
+          {
+            selectedId ? (
+            <MovieDetails 
+            selectedId={selectedId} 
+            onCloseMovie={handleCloseMovie}
+            />) :
+              (
+                <>
+                  <WatchedSummary watched={watched} />
+                  <WatchedMoviesList watched={watched} />
+                </>
+              )
+          }
         </Box>
       </Main>
     </>
@@ -252,19 +278,20 @@ function WatchedBox() {
 }
 */
 
-function MovieList({ movies }) {
+function MovieList({ movies, onSelectMovie }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie movie={movie} key={movie.imdbID}
+          onSelectMovie={onSelectMovie} />
       ))}
     </ul>
   );
 }
 
-function Movie({ movie }) {
+function Movie({ movie, onSelectMovie }) {
   return (
-    <li>
+    <li onClick={() => onSelectMovie(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -275,6 +302,12 @@ function Movie({ movie }) {
       </div>
     </li>
   );
+}
+
+function MovieDetails({ selectedId, onCloseMovie }) {
+  return <div className="details">
+    <button className="btn-back" onClick={onCloseMovie}>&larr;</button>
+    {selectedId}</div>;
 }
 
 function WatchedSummary({ watched }) {
