@@ -53,18 +53,49 @@ const average = (arr) =>
 const KEY = '92d76f2e';
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const query = "top+gun+Maverick";
+  const tempquery = "top+gun+Maverick";
 
+  /* The following shows how useEffect works and when its executed
+
+    useEffect(function () {
+      console.log("After initial render");
+    }, []); // empty array means it only runs once when the app mounts
+
+    useEffect(function () {
+      console.log("After every render");
+    }); // no array means it runs after every render
+
+    useEffect(function () {
+      console.log("D");
+    }, [query]); // array with a value means it runs after every render if the value has changed
+
+  */
+
+  /* 
+  This is a React component that fetches movie data from the OMDB API when it mounts.
+   It sets a loading state before starting the fetch and resets it when the fetch is complete.
+   If the fetch is successful, it updates the movies state with the fetched data.
+   If the fetch fails, it updates the error state with the error message.
+   The component renders different components based on the states:
+   - If it's loading, it renders a Loader component.
+   - If there's an error, it renders an ErrorMessage component with the error message.
+   - If it's not loading and there's no error, it renders a MovieList component with the movies.
+   It also renders a NavBar component with a Search component and a NumResults component with the movies,
+   and a Main component with two Box components, one with the Loader, ErrorMessage, or MovieList,
+   and one with a WatchedSummary component with the watched movies and a WatchedMoviesList component with the watched movies. 
+   */
   useEffect(function () {
     async function fetchMovies() {
 
       try {
         setIsLoading(true);
+        setError(""); // reset the error state
         const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`);
         // Check if the response was not successful
         if (!res.ok) {
@@ -89,13 +120,20 @@ export default function App() {
       }
       // console.log(data.Search);
     }
+    
+    if (!query.length) {
+      setMovies([])
+      setError('')
+      return
+    }
+
     fetchMovies();
-  }, []); // empty array means it only runs once when the app mounts
+  }, [query]); // empty array means it only runs once when the app mounts
 
   return (
     <>
       <NavBar>
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
 
@@ -149,8 +187,8 @@ function Logo() {
   );
 }
 
-function Search() {
-  const [query, setQuery] = useState("");
+function Search({ query, setQuery }) {
+
 
   return (
     <input
