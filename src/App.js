@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import StarRating from "./StarRating";
 /*
 const tempMovieData = [
   {
@@ -61,6 +62,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
 
 
   /* The following shows how useEffect works and when its executed
@@ -165,10 +167,10 @@ export default function App() {
         <Box>
           {
             selectedId ? (
-            <MovieDetails 
-            selectedId={selectedId} 
-            onCloseMovie={handleCloseMovie}
-            />) :
+              <MovieDetails
+                selectedId={selectedId}
+                onCloseMovie={handleCloseMovie}
+              />) :
               (
                 <>
                   <WatchedSummary watched={watched} />
@@ -305,9 +307,71 @@ function Movie({ movie, onSelectMovie }) {
 }
 
 function MovieDetails({ selectedId, onCloseMovie }) {
+
+  const [movie, setMovie] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { Title: title,
+    Poster: poster,
+    Year: year,
+    Runtime: runtime,
+    imdbRating,
+    Plot: plot,
+    Released: released,
+    Actors: actors,
+    Genre: genre,
+    Director: director,
+  }
+    = movie;
+
+  console.log(title, year)
+
+  useEffect(function () {
+    async function getMovieDetails() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`http://www.omdbapi.com/?i=${selectedId}&apikey=${KEY}`);
+        if (!res.ok) {
+          throw new Error('Could not fetch movie details.  Check your internet connection and try again.');
+        }
+        const data = await res.json();
+        // console.log(data);
+        setMovie(data);
+      } catch (error) {
+        console.error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getMovieDetails();
+  }, [selectedId]);
+
+
   return <div className="details">
-    <button className="btn-back" onClick={onCloseMovie}>&larr;</button>
-    {selectedId}</div>;
+    {isLoading ? <Loader /> :
+      <>
+        <header>
+          <button className="btn-back" onClick={onCloseMovie}>&larr;</button>
+          <img src={poster} alt={`Poster of ${movie} movie`} />
+          <div className="details-overview">
+            <h2>{title}</h2>
+            <p>{released} &bull; {runtime}</p>
+            <p>{genre}</p>
+            <p><span>⭐</span>{imdbRating} IMDb rating</p>
+
+          </div>
+        </header>
+        <section>
+          <div className="rating">
+            <StarRating maxRating={10} size={24} />
+          </div>
+          <p><em>{plot}</em></p>
+          <p>Starring {actors}</p>
+          <p>Directed by {director}</p>
+        </section>
+      </>
+    }
+  </div>;
 }
 
 function WatchedSummary({ watched }) {
