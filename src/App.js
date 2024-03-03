@@ -93,6 +93,10 @@ export default function App() {
     setSelectedId(null);
   }
 
+  function handleAddWatch(movie) {
+    setWatched((watched) => [...watched, movie]);
+  }
+
   /* 
   This is a React component that fetches movie data from the OMDB API when it mounts.
    It sets a loading state before starting the fetch and resets it when the fetch is complete.
@@ -170,6 +174,7 @@ export default function App() {
               <MovieDetails
                 selectedId={selectedId}
                 onCloseMovie={handleCloseMovie}
+                onAddWatched={handleAddWatch}
               />) :
               (
                 <>
@@ -306,10 +311,11 @@ function Movie({ movie, onSelectMovie }) {
   );
 }
 
-function MovieDetails({ selectedId, onCloseMovie }) {
+function MovieDetails({ selectedId, onCloseMovie, onAddWatched }) {
 
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState('');
 
   const { Title: title,
     Poster: poster,
@@ -325,6 +331,20 @@ function MovieDetails({ selectedId, onCloseMovie }) {
     = movie;
 
   console.log(title, year)
+
+  function handleAdd() {
+    const newWatchedMovie = {
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: runtime.split(' ').at(0),
+      userRating,
+    };
+    onAddWatched(newWatchedMovie);
+    onCloseMovie();
+  }
 
   useEffect(function () {
     async function getMovieDetails() {
@@ -363,7 +383,15 @@ function MovieDetails({ selectedId, onCloseMovie }) {
         </header>
         <section>
           <div className="rating">
-            <StarRating maxRating={10} size={24} />
+            <StarRating maxRating={10} size={24} onSetRating={setUserRating} />
+            { /* If the userRating is greater than 0, render the button */ }
+            {userRating > 0 &&
+              (<button className="btn-add"
+                onClick={handleAdd}>
+                + Add to list
+              </button>
+              )}
+
           </div>
           <p><em>{plot}</em></p>
           <p>Starring {actors}</p>
@@ -417,8 +445,8 @@ function WatchedMoviesList({ watched }) {
 function WatchedMovie({ movie }) {
   return (
     <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
+      <img src={movie.poster} alt={`${movie.title} poster`} />
+      <h3>{movie.title}</h3>
       <div>
         <p>
           <span>⭐️</span>
