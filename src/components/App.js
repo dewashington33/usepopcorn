@@ -69,7 +69,7 @@ export default function App() {
         // Parse the response as JSON
         const data = await res.json();
         // If the API response indicates an error, throw an error with the API's error message
-        // this could also indicat that there was a 404 error meaning the movie was not found
+        // this could also indicate that there was a 404 error meaning the movie was not found
         if (data.Response === 'False') throw new Error(data.Error);
         // Update the movies state with the Search results from the API response
         setMovies(data.Search);
@@ -93,7 +93,7 @@ export default function App() {
     }
 
     fetchMovies();
-  }, [query]); // empty array means it only runs once when the app mounts
+  }, [query]); // The query state is used as a dependency for the useEffect hook
 
   return (
     <>
