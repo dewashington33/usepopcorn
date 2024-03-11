@@ -3,13 +3,13 @@ import Box from "./Box";
 import ErrorMessage from "./ErrorMessage";
 import Loader from "./Loader";
 import Main from "./Main";
+import MovieDetails from "./MovieDetails";
+import MovieList from "./MovieList";
 import NavBar from "./NavBar";
 import NumResults from "./NumResults";
 import Search from "./Search";
-import MovieList from "./MovieList";
-import MovieDetails from "./MovieDetails";
-import WatchedSummary from "./WatchedSummary";
 import WatchedMoviesList from "./WatchedMoviesList";
+import WatchedSummary from "./WatchedSummary";
 
 const KEY = '92d76f2e';
 
@@ -39,6 +39,17 @@ export default function App() {
 
   function handleAddWatch(movie) {
     setWatched((watched) => [...watched, movie]);
+  }
+
+  // This function handles the deletion of a watched movie.
+  // It takes an id as a parameter, which is the imdbID of the movie to be deleted.
+  // The function updates the watched state by filtering out the movie with the given id.
+  // The filter method creates a new array with all movies that pass the test implemented by the provided function.
+  // In this case, the test is whether the imdbID of the movie is not equal to the given id.
+  // So, all movies except the one with the given id pass the test and are included in the new array.
+  // This effectively deletes the movie with the given id from the watched state.
+  function handleDeleteWatched(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
   /* 
@@ -124,7 +135,8 @@ export default function App() {
               (
                 <>
                   <WatchedSummary watched={watched} />
-                  <WatchedMoviesList watched={watched} />
+                  <WatchedMoviesList watched={watched} 
+                  onDeleteWatched={handleDeleteWatched}/>
                 </>
               )
           }

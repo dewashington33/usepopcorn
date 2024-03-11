@@ -8,13 +8,13 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     const [isLoading, setIsLoading] = useState(false);
     const [userRating, setUserRating] = useState('');
     /*
-    The watched variable is presumably an array of movie objects, each with an imdbID property. 
+    The watched variable is an array of movie objects, each with an imdbID property. 
     The map function is used to create a new array that consists of the 
     imdbID of each movie in the watched array.
     
     The includes function is then called on this new array of imdbIDs. 
     It checks if selectedId is present in the array. 
-    The selectedId is likely the imdbID of a movie that the user 
+    The selectedId is the imdbID of a movie that the user 
     has selected or is currently viewing.
     
     The result of this check (a boolean value) is assigned to the isWatched constant. 
@@ -24,7 +24,8 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     isWatched will be false, indicating that the selected movie has not been watched.
     */
     const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
-    console.log(isWatched);
+    //console.log(isWatched);
+    const watchedUserRating = watched.find((movie) => movie.imdbID === selectedId)?.userRating;
 
     const { Title: title,
         Poster: poster,
@@ -85,6 +86,19 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
         // The useEffect hook is set to run whenever the selectedId state changes
     }, [selectedId]);
 
+    useEffect(function () {
+        if (!movie.Title) return;
+        document.title = `Movie | ${movie.Title}`;
+        // This is a cleanup function that runs when the component unmounts or before the component updates.
+        // It resets the document's title to 'usePopcorn 🍿'.
+        // It also logs a message to the console indicating that the cleanup effect is running for the current movie.
+        return function () {
+            document.title = 'usePopcorn 🍿';
+            console.log(`Cleanup effect for movie ${movie.Title}`);
+        }
+    }, [movie.Title]
+    );
+
 
     return <div className="details">
         {isLoading ? <Loader /> :
@@ -113,7 +127,10 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
                                     </button>
                                     )}
                             </> : (
-                                <p>You rated the movie</p>
+                                <p>You rated the movie {watchedUserRating}
+                                    <span>🌟</span>
+                                </p>
+
                             )}
                     </div>
                     <p><em>{plot}</em></p>
