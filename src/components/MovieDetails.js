@@ -56,6 +56,23 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
         onCloseMovie();
     }
 
+    useEffect(function () {
+        function callback (event) {
+            // If the key pressed is the 'Escape' key, call the onCloseMovie function
+            if (event.code === 'Escape') {
+                // Call the onCloseMovie function to close the movie
+                onCloseMovie();
+                console.log('Escape key pressed');
+            }
+        }
+        // Add an event listener for the 'keydown' event on the document
+        document.addEventListener('keydown', callback);
+        return function () {
+            document.removeEventListener('keydown', callback);
+        }
+    }, [onCloseMovie]);
+
+
     // Use the useEffect hook to perform side effects
     useEffect(function () {
         // Define an asynchronous function to fetch movie details

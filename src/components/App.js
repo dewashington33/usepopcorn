@@ -52,6 +52,7 @@ export default function App() {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
+ 
   /* 
   This is a React component that fetches movie data from the OMDB API when it mounts.
    It sets a loading state before starting the fetch and resets it when the fetch is complete.
@@ -66,12 +67,16 @@ export default function App() {
    and one with a WatchedSummary component with the watched movies and a WatchedMoviesList component with the watched movies. 
    */
   useEffect(function () {
+    const controller = new AbortController();
+
     async function fetchMovies() {
 
       try {
         setIsLoading(true);
         setError(""); // reset the error state
-        const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`);
+        const res = await fetch(`http://www.omdbapi.com/?s=${query}&apikey=${KEY}`,
+          { signal: controller.signal }
+        );
         // Check if the response was not successful
         if (!res.ok) {
           // If the response was not successful, throw an error with a message
@@ -84,12 +89,16 @@ export default function App() {
         if (data.Response === 'False') throw new Error(data.Error);
         // Update the movies state with the Search results from the API response
         setMovies(data.Search);
+        setError("");
         // console.log(data.Search);
       }
       catch (error) {
         // Log the error to the console
         console.error(error.message);
-        setError(error.message);
+        if (error.name !== 'AbortError') {
+          setError(error.message);
+        }
+
       } finally {
         // Set the isLoading state to false to indicate that loading is complete
         setIsLoading(false);
@@ -103,7 +112,11 @@ export default function App() {
       return
     }
 
+    handleCloseMovie();
     fetchMovies();
+    return function () {
+      controller.abort();
+    }
   }, [query]); // The query state is used as a dependency for the useEffect hook
 
   return (
@@ -135,8 +148,8 @@ export default function App() {
               (
                 <>
                   <WatchedSummary watched={watched} />
-                  <WatchedMoviesList watched={watched} 
-                  onDeleteWatched={handleDeleteWatched}/>
+                  <WatchedMoviesList watched={watched}
+                    onDeleteWatched={handleDeleteWatched} />
                 </>
               )
           }
