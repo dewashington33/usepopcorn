@@ -17,12 +17,15 @@ export default function App() {
 
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-
-
+//const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(function () {
+    const storedValue = localStorage.getItem('watched');
+    return storedValue ? JSON.parse(storedValue) : [];
+  }
+  );
 
   function handleSelectMovie(id) {
     // Update the selectedId state
@@ -37,8 +40,9 @@ export default function App() {
     setSelectedId(null);
   }
 
-  function handleAddWatch(movie) {
+  function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
+    //localStorage.setItem('watched', JSON.stringify([...watched, movie]));
   }
 
   // This function handles the deletion of a watched movie.
@@ -52,7 +56,11 @@ export default function App() {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
 
- 
+  useEffect(function () {
+    localStorage.setItem('watched', JSON.stringify
+      (watched));
+  },
+    [watched]);
   /* 
   This is a React component that fetches movie data from the OMDB API when it mounts.
    It sets a loading state before starting the fetch and resets it when the fetch is complete.
@@ -142,7 +150,7 @@ export default function App() {
               <MovieDetails
                 selectedId={selectedId}
                 onCloseMovie={handleCloseMovie}
-                onAddWatched={handleAddWatch}
+                onAddWatched={handleAddWatched}
                 watched={watched}
               />) :
               (
